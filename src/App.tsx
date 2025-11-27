@@ -16,7 +16,6 @@ import Form from "./pages/Form";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-import Footer from "./components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -49,7 +48,6 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
-          <Footer />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
