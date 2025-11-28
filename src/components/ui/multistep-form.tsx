@@ -339,18 +339,6 @@ const OnboardingForm = ({ initialStep = 0 }: OnboardingFormProps) => {
     }
   };
 
-  const handleSaveAndReturn = () => {
-    // Marcar a etapa atual como completa
-    updateProgress(currentStep, 'completed');
-    
-    toast.success("Etapa salva com sucesso!");
-    
-    // Voltar para o dashboard
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 500);
-  };
-
   const handleSaveAndNext = () => {
     // Marcar a etapa atual como completa
     updateProgress(currentStep, 'completed');
@@ -365,8 +353,11 @@ const OnboardingForm = ({ initialStep = 0 }: OnboardingFormProps) => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 500);
     } else {
-      // Se for a última, apenas salvar e voltar
-      handleSaveAndReturn();
+      // Se for a última, salvar e voltar ao dashboard
+      toast.success("Etapa salva com sucesso!");
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
     }
   };
 
@@ -1415,73 +1406,60 @@ const OnboardingForm = ({ initialStep = 0 }: OnboardingFormProps) => {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => {
+                      if (confirm('Dados não salvos serão perdidos. Deseja realmente voltar ao dashboard?')) {
+                        navigate('/dashboard');
+                      }
+                    }}
                     className="flex items-center gap-1 transition-all duration-300"
                   >
                     <ArrowLeft className="h-4 w-4" /> Voltar ao Dashboard
                   </Button>
                 </motion.div>
 
-                <div className="flex gap-3">
+                {currentStep < steps.length - 1 && (
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <Button
                       type="button"
-                      variant="outline"
-                      onClick={handleSaveAndReturn}
+                      onClick={handleSaveAndNext}
                       disabled={!isStepValid() || isSubmitting}
-                      className="flex items-center gap-2 transition-all duration-300 rounded-2xl border-2"
+                      className={cn(
+                        "flex items-center gap-2 transition-all duration-300 rounded-2xl bg-[#FFC800] hover:bg-[#FFD700] text-black font-semibold",
+                      )}
                     >
-                      <Check className="h-4 w-4" /> Salvar
+                      Salvar e Continuar <ChevronRight className="h-4 w-4" />
                     </Button>
                   </motion.div>
+                )}
 
-                  {currentStep < steps.length - 1 && (
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                {currentStep === steps.length - 1 && (
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={!isStepValid() || isSubmitting}
+                      className={cn(
+                        "flex items-center gap-2 transition-all duration-300 rounded-2xl bg-[#FFC800] hover:bg-[#FFD700] text-black font-semibold",
+                      )}
                     >
-                      <Button
-                        type="button"
-                        onClick={handleSaveAndNext}
-                        disabled={!isStepValid() || isSubmitting}
-                        className={cn(
-                          "flex items-center gap-2 transition-all duration-300 rounded-2xl bg-[#FFC800] hover:bg-[#FFD700] text-black font-semibold",
-                        )}
-                      >
-                        Salvar e Continuar <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </motion.div>
-                  )}
-
-                  {currentStep === steps.length - 1 && (
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={!isStepValid() || isSubmitting}
-                        className={cn(
-                          "flex items-center gap-2 transition-all duration-300 rounded-2xl bg-[#FFC800] hover:bg-[#FFD700] text-black font-semibold",
-                        )}
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" /> Enviando...
-                          </>
-                        ) : (
-                          <>
-                            Enviar Inscrição <Check className="h-4 w-4" />
-                          </>
-                        )}
-                      </Button>
-                    </motion.div>
-                  )}
-                </div>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Enviando...
+                        </>
+                      ) : (
+                        <>
+                          Enviar Inscrição <Check className="h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </motion.div>
+                )}
               </div>
             </CardFooter>
           </div>
