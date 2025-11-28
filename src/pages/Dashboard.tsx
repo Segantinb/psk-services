@@ -49,6 +49,18 @@ const Dashboard = () => {
       }
       
       setFormProgress(updatedProgress);
+    } else {
+      // Se não houver progresso salvo, iniciar zerado
+      setFormProgress({
+        0: 'in-progress',
+        1: 'locked',
+        2: 'locked',
+        3: 'locked',
+        4: 'locked',
+        5: 'locked',
+        6: 'locked',
+        7: 'locked',
+      });
     }
   }, []);
 

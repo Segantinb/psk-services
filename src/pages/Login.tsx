@@ -26,25 +26,35 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validação temporariamente desabilitada - auto login
-    await signup(loginEmail || 'Usuário', loginEmail || 'user@email.com', 'temp123');
+    // Modo de testes - limpar dados anteriores e começar zerado
+    localStorage.removeItem('formProgress');
+    localStorage.removeItem('formData');
+    
+    // Auto login direto ao dashboard
+    await signup(loginEmail || 'Usuário Teste', loginEmail || 'teste@zedelivery.com', 'temp123');
     
     toast({
-      title: "Login realizado com sucesso!",
-      description: "Bem-vindo de volta.",
+      title: "Acesso liberado!",
+      description: "Área de testes zerada. Redirecionando...",
     });
+    
+    // Ir direto ao dashboard
     navigate('/dashboard');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validação temporariamente desabilitada - auto signup
-    await signup(signupName || 'Usuário', signupEmail || 'user@email.com', 'temp123');
+    // Modo de testes - limpar dados anteriores e começar zerado
+    localStorage.removeItem('formProgress');
+    localStorage.removeItem('formData');
+    
+    // Auto signup direto ao dashboard
+    await signup(signupName || 'Usuário Teste', signupEmail || 'teste@zedelivery.com', 'temp123');
     
     toast({
       title: "Conta criada com sucesso!",
-      description: "Você já está logado.",
+      description: "Área de testes zerada. Você já está logado.",
     });
     navigate('/dashboard');
   };
