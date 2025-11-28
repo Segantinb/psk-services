@@ -4,27 +4,39 @@ import { Link } from "react-router-dom";
 const faqItems = [
   {
     id: "item-1",
-    question: "Quem pode participar?",
+    question: "Quem pode participar do programa?",
     answer:
-      "Para participar, é necessário comprovar o registro do produto junto à ANVISA e/ou MAPA, conforme a categoria da bebida, mediante apresentação do certificado de registro, número de processo ou declaração de isenção aplicável. Também é preciso apresentar certificado ou protocolo de registro de marca no INPI ou documento de licenciamento válido; comprovar que o estabelecimento fabricante e/ou industrializador está regularizado junto ao MAPA/ANVISA, conforme aplicável; garantir volume mínimo de 2.000 unidades de produto por estado, sendo 50% custeado pela startup para o trial; disponibilizar materiais de marketing da marca; e comprometer-se com a reposição e manutenção do estoque de produto. Tenha todos esses materiais em mãos para realizar a inscrição.",
+      "Startups e marcas de bebidas que já possuam registro ativo do produto junto à ANVISA e/ou MAPA, conforme sua categoria. Também é necessário apresentar certificado ou protocolo de registro de marca no INPI (ou documento de licenciamento válido).",
   },
   {
     id: "item-2",
-    question: "Como é feita a inscrição?",
+    question: "O que preciso comprovar na inscrição?",
     answer:
-      "A inscrição é realizada online por meio do preenchimento de um formulário e envio da documentação diretamente no link oficial do programa. Todos os dados fornecidos são tratados em conformidade com a LGPD.",
+      "Você precisará enviar o Certificado, número de processo ou declaração de isenção da ANVISA/MAPA; Prova de registro ou protocolo de marca no INPI; E documento que comprove a regularização do fabricante/industrializador junto aos órgãos competentes.",
   },
   {
     id: "item-3",
-    question: "Quanto tempo dura o experimento?",
+    question: "Existe quantidade mínima de produto para o teste?",
     answer:
-      "O experimento dura, no mínimo, 3 meses dentro do app, ou enquanto durarem os estoques. O objetivo é disponibilizar seu produto para o máximo de consumidores dentro das regiões escolhidas, promovendo aprendizado constante sobre preço, disponibilidade, NPS e outros indicadores relevantes.",
+      "Sim. É necessário disponibilizar pelo menos 2.000 unidades por estado, sendo 50% desse volume custeado pela startup para o trial.",
   },
   {
     id: "item-4",
-    question: "O que acontece depois do período de experimentação?",
+    question: "Preciso enviar materiais da marca?",
     answer:
-      "Caso o produto apresente resultados promissores, será possível escalar a distribuição para todo o Brasil e seguir uma curva de expansão frente aos milhões de consumidores do Zé Delivery. Isso pode incluir prateleiras exclusivas, pacotes de comunicação para bases selecionadas e outras iniciativas para impulsionar ainda mais as vendas dentro do maior app de bebidas do mundo.",
+      "Sim. É importante disponibilizar imagens, textos e materiais de marketing do produto para ativação no app e comunicações.",
+  },
+  {
+    id: "item-5",
+    question: "Há compromisso de reposição de estoque?",
+    answer:
+      "Sim. Durante o período de teste, a startup deve garantir a reposição e manutenção do estoque para não interromper as vendas.",
+  },
+  {
+    id: "item-6",
+    question: "Quem garante a propriedade dos meus dados e receitas?",
+    answer:
+      "Todo o tratamento de dados segue integralmente as normas da Lei Geral de Proteção de Dados (LGPD), garantindo segurança, confidencialidade e transparência em cada etapa do programa. Além disso, nenhuma fórmula, receita ou propriedade intelectual é compartilhada ou utilizada pela Ambev ou pelo Zé Delivery sem autorização prévia.",
   },
 ];
 

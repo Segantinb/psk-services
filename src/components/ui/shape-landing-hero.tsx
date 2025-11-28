@@ -64,6 +64,15 @@ function HeroGeometric({
                   Transforme o Zé Delivery no laboratório da sua bebida. Milhões de clientes, dados reais e a escalabilidade que<br />sua startup precisa.
                 </p>
               </motion.div>
+
+              <motion.div
+                custom={3}
+                variants={fadeUpVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <GetStartedButton />
+              </motion.div>
             </div>
 
             {/* Right Side - Image */}
