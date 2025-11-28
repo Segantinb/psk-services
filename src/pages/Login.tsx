@@ -26,37 +26,60 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Modo de testes - limpar dados anteriores e começar zerado
+    // Modo de testes - limpar TODOS os dados e fazer auto login
     localStorage.removeItem('formProgress');
     localStorage.removeItem('formData');
+    localStorage.removeItem('users');
+    localStorage.removeItem('user');
     
-    // Auto login direto ao dashboard
-    await signup(loginEmail || 'Usuário Teste', loginEmail || 'teste@zedelivery.com', 'temp123');
+    const success = await signup(loginEmail || 'Usuário Teste', loginEmail || 'teste@zedelivery.com', 'temp123');
     
-    toast({
-      title: "Acesso liberado!",
-      description: "Área de testes zerada. Redirecionando...",
-    });
-    
-    // Ir direto ao dashboard
-    navigate('/dashboard');
+    if (success) {
+      toast({
+        title: "Acesso liberado!",
+        description: "Área de testes zerada. Redirecionando...",
+      });
+      
+      // Ir direto ao dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 100);
+    } else {
+      toast({
+        title: "Erro ao fazer login",
+        description: "Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Modo de testes - limpar dados anteriores e começar zerado
+    // Modo de testes - limpar TODOS os dados e fazer auto signup
     localStorage.removeItem('formProgress');
     localStorage.removeItem('formData');
+    localStorage.removeItem('users');
+    localStorage.removeItem('user');
     
-    // Auto signup direto ao dashboard
-    await signup(signupName || 'Usuário Teste', signupEmail || 'teste@zedelivery.com', 'temp123');
+    const success = await signup(signupName || 'Usuário Teste', signupEmail || 'teste@zedelivery.com', 'temp123');
     
-    toast({
-      title: "Conta criada com sucesso!",
-      description: "Área de testes zerada. Você já está logado.",
-    });
-    navigate('/dashboard');
+    if (success) {
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Área de testes zerada. Você já está logado.",
+      });
+      
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 100);
+    } else {
+      toast({
+        title: "Erro ao criar conta",
+        description: "Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

@@ -50,7 +50,7 @@ const Dashboard = () => {
       
       setFormProgress(updatedProgress);
     } else {
-      // Se não houver progresso salvo, iniciar zerado
+      // Inicializar com estado zerado se não houver progresso salvo
       setFormProgress({
         0: 'in-progress',
         1: 'locked',
