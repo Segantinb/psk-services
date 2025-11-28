@@ -1,6 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 
 const faqItems = [
   {
@@ -30,43 +29,17 @@ const faqItems = [
 ];
 
 export default function FAQs() {
-  const fadeUpVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 1,
-        delay: i * 0.2,
-        ease: [0.25, 0.4, 0.25, 1],
-      },
-    }),
-  };
-
   return (
     <section className="bg-[#515151] py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4">
-        <motion.div
-          custom={0}
-          variants={fadeUpVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-        >
+        <div>
           <h2 className="text-white text-4xl md:text-[42px] font-gelada font-black leading-tight tracking-tight uppercase">Dúvidas Frequentes</h2>
           <p className="text-white/80 mt-4 text-balance text-lg">
             Tire suas principais dúvidas sobre quem pode participar, como funciona a inscrição e o que acontece após o período de experimentação.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          custom={1}
-          variants={fadeUpVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          className="mt-12"
-        >
+        <div className="mt-12">
           <Accordion
             type="single"
             collapsible
@@ -91,7 +64,7 @@ export default function FAQs() {
             </Link>
             .
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GetStartedButton } from "@/components/ui/get-started-button";
 import { Waves } from "@/components/ui/wave-background";
 
 function HeroGeometric({
@@ -63,15 +62,6 @@ function HeroGeometric({
                 <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 leading-relaxed tracking-wide" style={{ fontFamily: 'Roboto, sans-serif', fontWeight: 500 }}>
                   Transforme o Zé Delivery no laboratório da sua bebida. Milhões de clientes, dados reais e a escalabilidade que<br />sua startup precisa.
                 </p>
-              </motion.div>
-
-              <motion.div
-                custom={3}
-                variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                <GetStartedButton />
               </motion.div>
             </div>
 
