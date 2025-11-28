@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GetStartedButton } from "@/components/ui/get-started-button";
 import { Waves } from "@/components/ui/wave-background";
 
 function HeroGeometric({
