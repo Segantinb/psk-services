@@ -1,4 +1,5 @@
 import { Clock } from "lucide-react";
+import { motion } from "framer-motion";
 
 const steps = [
   {
@@ -28,21 +29,46 @@ const steps = [
 ];
 
 export default function ProcessStepsFigma() {
+  const fadeUpVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 1,
+        delay: i * 0.15,
+        ease: [0.25, 0.4, 0.25, 1],
+      },
+    }),
+  };
+
   return (
     <div className="bg-[#515151] w-full py-20">
       <div className="mx-auto max-w-6xl px-4">
         {/* Header */}
-        <div className="mb-16">
+        <motion.div
+          custom={0}
+          variants={fadeUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="mb-16"
+        >
           <h2 className="text-white text-4xl md:text-[42px] font-gelada font-black leading-tight tracking-tight uppercase">
             Etapas do processo
           </h2>
-        </div>
+        </motion.div>
 
         {/* Steps Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0">
-          {steps.map((step) => (
-            <div
+          {steps.map((step, index) => (
+            <motion.div
               key={step.number}
+              custom={index + 1}
+              variants={fadeUpVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
               className="border-l border-[rgba(255,255,255,0.13)] px-6 pt-12 pb-8 min-h-[400px] flex flex-col relative"
             >
               {/* Large Background Number */}
@@ -76,7 +102,7 @@ export default function ProcessStepsFigma() {
                   <span className="text-[#eeeeee] text-sm leading-none">{step.date}</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

@@ -1,11 +1,32 @@
 import React from "react";
+import { motion } from "framer-motion";
 
 export function HighlightsSection() {
+  const fadeUpVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 1,
+        delay: i * 0.2,
+        ease: [0.25, 0.4, 0.25, 1],
+      },
+    }),
+  };
+
   return (
     <section className="bg-[#f3f6f3] py-16 md:py-24 flex items-center justify-center">
       <div className="mx-auto flex max-w-6xl flex-col gap-[14px] px-4 md:flex-row md:gap-[14px]">
         {/* Coluna 1 - Teste rápido */}
-        <div className="flex w-[407px] h-[645px] flex-col items-center rounded-3xl bg-white shadow-lg">
+        <motion.div
+          custom={0}
+          variants={fadeUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="flex w-[407px] h-[645px] flex-col items-center rounded-3xl bg-white shadow-lg"
+        >
           <div className="text-center px-6 pt-[64px]">
             <h2 className="font-gelada text-[48px] font-black italic tracking-[0] text-[#333333] uppercase m-0">
               TESTE RÁPIDO
@@ -23,10 +44,17 @@ export function HighlightsSection() {
               className="w-[297px] h-[411px] object-contain object-bottom"
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Coluna 2 - Insights reais */}
-        <div className="flex w-full flex-col gap-4 md:w-1/3">
+        <motion.div
+          custom={1}
+          variants={fadeUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="flex w-full flex-col gap-4 md:w-1/3"
+        >
           <div className="flex flex-1 flex-col items-center justify-center rounded-3xl bg-[#FFC800] px-10 py-10 text-center shadow-lg">
             <h2 className="font-gelada text-[56px] font-black leading-[60px] text-[#333333] uppercase break-words" style={{ fontWeight: 900 }}>
               INSIGHTS
@@ -46,10 +74,17 @@ export function HighlightsSection() {
               className="h-64 w-full object-cover opacity-90"
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Coluna 3 - Alcance nacional */}
-        <div className="flex w-full flex-col gap-4 md:w-1/3 justify-end">
+        <motion.div
+          custom={2}
+          variants={fadeUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="flex w-full flex-col gap-4 md:w-1/3 justify-end"
+        >
           <div className="overflow-hidden rounded-3xl bg-white shadow-lg flex justify-end">
             <img
               src="/img/mulherapp.png"
@@ -79,7 +114,7 @@ export function HighlightsSection() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
