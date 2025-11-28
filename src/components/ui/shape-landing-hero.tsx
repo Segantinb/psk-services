@@ -29,10 +29,10 @@ function HeroGeometric({
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white">
+    <div className="relative min-h-[75vh] w-full flex items-center justify-center overflow-hidden bg-white">
       {/* Waves Background */}
       <Waves 
-        className="absolute inset-0 opacity-10" 
+        className="absolute inset-0 opacity-10 h-[calc(8.4375vh-2.8125px)]" 
         strokeColor="#9ca3af" 
         backgroundColor="#ffffff"
         pointerSize={0}
@@ -40,29 +40,16 @@ function HeroGeometric({
 
       <div className="relative z-10 container mx-auto px-4 md:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4 items-center justify-center">
             {/* Left Side - Text Content */}
             <div className="text-left">
-              <motion.div
-                custom={0}
-                variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-900/[0.05] border border-gray-900/[0.12] mb-8 md:mb-12"
-              >
-                <Circle className="h-2 w-2 fill-rose-500" />
-                <span className="text-sm text-gray-600 tracking-wide">
-                  {badge}
-                </span>
-              </motion.div>
-
               <motion.div
                 custom={1}
                 variants={fadeUpVariants}
                 initial="hidden"
                 animate="visible"
               >
-                <h1 className="font-gelada text-[1.75rem] sm:text-[2.125rem] md:text-[3.5rem] font-black tracking-tight text-black leading-tight" style={{ marginBottom: '29px', fontWeight: 900, lineHeight: '1.15' }}>
+                <h1 className="font-gelada text-[1.75rem] sm:text-[2.125rem] md:text-[3.5rem] font-black tracking-tight text-[#333333] leading-tight" style={{ marginBottom: '29px', fontWeight: 900, lineHeight: '1.15' }}>
                   {title1} ESTÃO NO <span className="text-[#FFC800]">ZÉ DELIVERY</span>
                 </h1>
               </motion.div>
@@ -99,7 +86,7 @@ function HeroGeometric({
               <img
                 src="/hero-image.png"
                 alt="Zé Delivery"
-                className="w-auto h-full max-h-[480px] md:max-h-[600px] object-contain"
+                className="w-auto h-full max-h-[408px] md:max-h-[510px] object-contain"
               />
             </motion.div>
           </div>

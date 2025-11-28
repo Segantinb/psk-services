@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Check, Loader2, Plus, Trash2, Upload, Package } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Loader2, Plus, Trash2, Upload, Package, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,8 +53,6 @@ interface Product {
   shelfLife: string;
   dimensions: string;
   barcode: string;
-  photos: File[];
-  technicalSheet: File | null;
   productionStatus: string;
 }
 
@@ -79,11 +79,13 @@ interface FormData {
   teamSize: string;
   otherChannels: string;
   
-  // Documentação
+  // Documentação (todos os uploads agrupados)
   regulatoryStatus: string;
   regulatoryDoc: File | null;
   brandStatus: string;
   brandDoc: File | null;
+  productPhotos: { [productId: string]: File[] };
+  productTechnicalSheets: { [productId: string]: File | null };
   
   // Inovação
   innovation: string;
@@ -125,69 +127,108 @@ const contentVariants = {
   exit: { opacity: 0, x: -50, transition: { duration: 0.2 } },
 };
 
-const OnboardingForm = () => {
-  const [currentStep, setCurrentStep] = useState(0);
+interface OnboardingFormProps {
+  initialStep?: number;
+}
+
+const OnboardingForm = ({ initialStep = 0 }: OnboardingFormProps) => {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    // Elegibilidade
-    isStartup: "",
-    cnpj: "",
-    hasCnpj: "",
-    categories: [],
-    isReady: "",
+  const [formData, setFormData] = useState<FormData>(() => {
+    // Load saved form data from localStorage
+    const saved = localStorage.getItem('formData');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error loading form data:', e);
+      }
+    }
     
-    // Dados da Startup
-    legalName: "",
-    tradeName: "",
-    website: "",
-    instagram: "",
-    linkedin: "",
-    city: "",
-    state: "",
-    contactName: "",
-    contactRole: "",
-    contactEmail: "",
-    contactPhone: "",
-    teamSize: "",
-    otherChannels: "",
-    
-    // Documentação
-    regulatoryStatus: "",
-    regulatoryDoc: null,
-    brandStatus: "",
-    brandDoc: null,
-    
-    // Inovação
-    innovation: "",
-    valueProposition: "",
-    targetAudience: "",
-    socialProof: "",
-    market: "",
-    
-    // Produtos
-    products: [],
-    
-    // Operação
-    manufacturerCnpj: "",
-    productionLocation: "",
-    logisticsOperator: "",
-    distributionCenters: "",
-    
-    // Condições do Piloto
-    bonificationConfirm: false,
-    consignmentConfirm: false,
-    periodConfirm: false,
-    selectedPriorities: [],
-    
-    // Aceite Final
-    brandUsageAuthorization: false,
-    caseStudyAvailability: false,
-    inPersonAvailability: "",
-    regulationAccept: false,
+    return {
+      // Elegibilidade
+      isStartup: "",
+      cnpj: "",
+      hasCnpj: "",
+      categories: [],
+      isReady: "",
+      
+      // Dados da Startup
+      legalName: "",
+      tradeName: "",
+      website: "",
+      instagram: "",
+      linkedin: "",
+      city: "",
+      state: "",
+      contactName: "",
+      contactRole: "",
+      contactEmail: "",
+      contactPhone: "",
+      teamSize: "",
+      otherChannels: "",
+      
+      // Documentação
+      regulatoryStatus: "",
+      regulatoryDoc: null,
+      brandStatus: "",
+      brandDoc: null,
+      productPhotos: {},
+      productTechnicalSheets: {},
+      
+      // Inovação
+      innovation: "",
+      valueProposition: "",
+      targetAudience: "",
+      socialProof: "",
+      market: "",
+      
+      // Produtos
+      products: [],
+      
+      // Operação
+      manufacturerCnpj: "",
+      productionLocation: "",
+      logisticsOperator: "",
+      distributionCenters: "",
+      
+      // Condições do Piloto
+      bonificationConfirm: false,
+      consignmentConfirm: false,
+      periodConfirm: false,
+      selectedPriorities: [],
+      
+      // Aceite Final
+      brandUsageAuthorization: false,
+      caseStudyAvailability: false,
+      inPersonAvailability: "",
+      regulationAccept: false,
+    };
   });
 
+  // Update initial step when prop changes
+  React.useEffect(() => {
+    setCurrentStep(initialStep);
+  }, [initialStep]);
+
   const updateFormData = (field: keyof FormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Save to localStorage (excluding File objects for simplicity)
+      try {
+        const toSave = { ...updated };
+        // Don't save File objects to localStorage
+        delete (toSave as any).regulatoryDoc;
+        delete (toSave as any).brandDoc;
+        delete (toSave as any).productPhotos;
+        delete (toSave as any).productTechnicalSheets;
+        localStorage.setItem('formData', JSON.stringify(toSave));
+      } catch (e) {
+        console.error('Error saving form data:', e);
+      }
+      return updated;
+    });
   };
 
   const toggleCategory = (category: string) => {
@@ -230,14 +271,30 @@ const OnboardingForm = () => {
         shelfLife: "",
         dimensions: "",
         barcode: "",
-        photos: [],
-        technicalSheet: null,
         productionStatus: "",
       };
-      setFormData((prev) => ({
-        ...prev,
-        products: [...prev.products, newProduct],
-      }));
+      setFormData((prev) => {
+        const updated = {
+          ...prev,
+          products: [...prev.products, newProduct],
+          productPhotos: { ...prev.productPhotos, [newProduct.id]: [] },
+          productTechnicalSheets: { ...prev.productTechnicalSheets, [newProduct.id]: null },
+        };
+        
+        // Save to localStorage
+        try {
+          const toSave = { ...updated };
+          delete (toSave as any).regulatoryDoc;
+          delete (toSave as any).brandDoc;
+          delete (toSave as any).productPhotos;
+          delete (toSave as any).productTechnicalSheets;
+          localStorage.setItem('formData', JSON.stringify(toSave));
+        } catch (e) {
+          console.error('Error saving form data:', e);
+        }
+        
+        return updated;
+      });
     }
   };
 
@@ -258,13 +315,90 @@ const OnboardingForm = () => {
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep((prev) => {
+        const next = prev + 1;
+        // Update progress in localStorage
+        updateProgress(prev, 'completed');
+        updateProgress(next, 'in-progress');
+        // Unlock next step
+        if (next + 1 < steps.length) {
+          updateProgress(next + 1, 'locked');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return next;
+      });
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
+      setCurrentStep((prev) => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return prev - 1;
+      });
+    }
+  };
+
+  const handleSaveAndReturn = () => {
+    // Marcar a etapa atual como completa
+    updateProgress(currentStep, 'completed');
+    
+    toast.success("Etapa salva com sucesso!");
+    
+    // Voltar para o dashboard
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 500);
+  };
+
+  const handleSaveAndNext = () => {
+    // Marcar a etapa atual como completa
+    updateProgress(currentStep, 'completed');
+    
+    // Verificar se há próxima etapa disponível
+    if (currentStep < steps.length - 1) {
+      toast.success("Etapa salva! Indo para a próxima...");
+      
+      // Ir para próxima etapa
+      setTimeout(() => {
+        setCurrentStep(currentStep + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 500);
+    } else {
+      // Se for a última, apenas salvar e voltar
+      handleSaveAndReturn();
+    }
+  };
+
+  const updateProgress = (stepId: number, status: 'completed' | 'in-progress' | 'locked' | 'pending') => {
+    try {
+      const saved = localStorage.getItem('formProgress');
+      const progress = saved ? JSON.parse(saved) : {};
+      progress[stepId] = status;
+      
+      // Se a elegibilidade (step 0) foi completada, desbloquear etapas 1-6
+      if (stepId === 0 && status === 'completed') {
+        for (let i = 1; i <= 6; i++) {
+          if (!progress[i] || progress[i] === 'locked') {
+            progress[i] = 'pending';
+          }
+        }
+      }
+      
+      // Verificar se todas as etapas 0-6 estão completas para desbloquear o Aceite Final (step 7)
+      const allPreviousCompleted = [0, 1, 2, 3, 4, 5, 6].every(i => progress[i] === 'completed');
+      if (allPreviousCompleted) {
+        progress[7] = 'pending';
+      } else {
+        // Manter bloqueado se não tiver todas completas
+        if (progress[7] !== 'completed') {
+          progress[7] = 'locked';
+        }
+      }
+      
+      localStorage.setItem('formProgress', JSON.stringify(progress));
+    } catch (e) {
+      console.error('Error updating progress:', e);
     }
   };
 
@@ -275,7 +409,18 @@ const OnboardingForm = () => {
     setTimeout(() => {
       console.log("Form Data:", formData);
       toast.success("Inscrição enviada com sucesso! Entraremos em contato em breve.");
+      
+      // Mark all steps as completed
+      for (let i = 0; i < steps.length; i++) {
+        updateProgress(i, 'completed');
+      }
+      
       setIsSubmitting(false);
+      
+      // Redirect to dashboard after 2 seconds
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
     }, 1500);
   };
 
@@ -300,10 +445,10 @@ const OnboardingForm = () => {
           formData.contactPhone.trim() !== ""
         );
       case 2: // Documentação
-        return (
-          formData.regulatoryStatus !== "" &&
-          formData.brandStatus !== ""
-        );
+        // Validar documentos básicos
+        const hasBasicDocs = formData.regulatoryStatus !== "" && formData.brandStatus !== "";
+        // Opcional: validar documentos dos produtos (pode ser flexível)
+        return hasBasicDocs;
       case 3: // Inovação
         return (
           formData.innovation.trim() !== "" &&
@@ -336,59 +481,21 @@ const OnboardingForm = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4">
-      {/* Progress indicator */}
+      {/* Back to Dashboard Button */}
       <motion.div
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        className="mb-6"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="flex justify-between mb-2 overflow-x-auto pb-2">
-          {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              className="flex flex-col items-center min-w-[80px]"
-              whileHover={{ scale: 1.05 }}
-            >
-              <motion.div
-                className={cn(
-                  "w-8 h-8 rounded-full cursor-pointer transition-colors duration-300 flex items-center justify-center text-xs font-semibold",
-                  index < currentStep
-                    ? "bg-[#FFC800] text-black"
-                    : index === currentStep
-                      ? "bg-[#FFC800] ring-4 ring-[#FFC800]/20 text-black"
-                      : "bg-gray-200 text-gray-500",
-                )}
-                onClick={() => {
-                  if (index <= currentStep) {
-                    setCurrentStep(index);
-                  }
-                }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {index < currentStep ? <Check className="h-4 w-4" /> : index + 1}
-              </motion.div>
-              <motion.span
-                className={cn(
-                  "text-xs mt-1.5 text-center",
-                  index === currentStep
-                    ? "text-[#FFC800] font-medium"
-                    : "text-gray-500",
-                )}
-              >
-                {step.title}
-              </motion.span>
-            </motion.div>
-          ))}
-        </div>
-        <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mt-4">
-          <motion.div
-            className="h-full bg-[#FFC800]"
-            initial={{ width: 0 }}
-            animate={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-2 text-gray-600 hover:text-black"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar ao Dashboard
+        </Button>
       </motion.div>
 
       {/* Form card */}
@@ -670,84 +777,199 @@ const OnboardingForm = () => {
                 {currentStep === 2 && (
                   <>
                     <CardHeader>
-                      <CardTitle className="text-2xl font-gelada text-black">Documentação Regulatória e Marcas</CardTitle>
+                      <CardTitle className="text-2xl font-gelada text-black">Documentação Completa</CardTitle>
                       <CardDescription className="text-gray-700">
-                        Certifique-se de que todos os documentos estejam em ordem
+                        Upload de todos os documentos necessários
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                      <motion.div variants={fadeInUp} className="space-y-2">
-                        <Label>Status regulatório do fabricante/industrializador *</Label>
-                        <RadioGroup
-                          value={formData.regulatoryStatus}
-                          onValueChange={(value) => updateFormData("regulatoryStatus", value)}
-                          className="space-y-2"
-                        >
-                          {[
-                            { value: "mapa", label: "Regular no MAPA" },
-                            { value: "anvisa", label: "Regular na ANVISA" },
-                            { value: "ambos", label: "Ambos (MAPA e ANVISA)" }
-                          ].map((option) => (
-                            <div key={option.value} className="flex items-center space-x-2 rounded-md border border-gray-300 p-3 cursor-pointer hover:bg-[#FFC800]/10 hover:border-[#FFC800] transition-all duration-300">
-                              <RadioGroupItem value={option.value} id={`reg-${option.value}`} />
-                              <Label htmlFor={`reg-${option.value}`} className="cursor-pointer w-full">
-                                {option.label}
-                              </Label>
-                            </div>
+                    <CardContent className="space-y-8">
+                      {/* Seção: Documentação Regulatória */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-black border-b pb-2">📋 Documentação Regulatória</h3>
+                        
+                        <motion.div variants={fadeInUp} className="space-y-2">
+                          <Label>Status regulatório do fabricante/industrializador *</Label>
+                          <RadioGroup
+                            value={formData.regulatoryStatus}
+                            onValueChange={(value) => updateFormData("regulatoryStatus", value)}
+                            className="space-y-2"
+                          >
+                            {[
+                              { value: "mapa", label: "Regular no MAPA" },
+                              { value: "anvisa", label: "Regular na ANVISA" },
+                              { value: "ambos", label: "Ambos (MAPA e ANVISA)" }
+                            ].map((option) => (
+                              <div key={option.value} className="flex items-center space-x-2 rounded-md border border-gray-300 p-3 cursor-pointer hover:bg-[#FFC800]/10 hover:border-[#FFC800] transition-all duration-300">
+                                <RadioGroupItem value={option.value} id={`reg-${option.value}`} />
+                                <Label htmlFor={`reg-${option.value}`} className="cursor-pointer w-full">
+                                  {option.label}
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </motion.div>
+
+                        <motion.div variants={fadeInUp} className="space-y-2">
+                          <Label htmlFor="regulatoryDoc">Upload comprovante de regularidade (PDF) *</Label>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#FFC800] transition-colors cursor-pointer"
+                               onClick={() => document.getElementById('regulatoryDoc')?.click()}>
+                            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                            {formData.regulatoryDoc ? (
+                              <p className="text-sm text-green-600 font-medium">✓ {formData.regulatoryDoc.name}</p>
+                            ) : (
+                              <p className="text-sm text-gray-600">Clique para fazer upload ou arraste o arquivo aqui</p>
+                            )}
+                            <Input
+                              id="regulatoryDoc"
+                              type="file"
+                              accept=".pdf"
+                              className="hidden"
+                              onChange={(e) => updateFormData("regulatoryDoc", e.target.files?.[0] || null)}
+                            />
+                          </div>
+                        </motion.div>
+                      </div>
+
+                      {/* Seção: Marca e INPI */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-black border-b pb-2">™ Registro de Marca</h3>
+                        
+                        <motion.div variants={fadeInUp} className="space-y-2">
+                          <Label>Marca registrada no INPI ou licença válida? *</Label>
+                          <RadioGroup
+                            value={formData.brandStatus}
+                            onValueChange={(value) => updateFormData("brandStatus", value)}
+                            className="space-y-2"
+                          >
+                            {[
+                              { value: "definitivo", label: "Registro definitivo" },
+                              { value: "protocolo", label: "Protocolo em andamento" },
+                              { value: "licenciamento", label: "Licenciamento válido" }
+                            ].map((option) => (
+                              <div key={option.value} className="flex items-center space-x-2 rounded-md border border-gray-300 p-3 cursor-pointer hover:bg-[#FFC800]/10 hover:border-[#FFC800] transition-all duration-300">
+                                <RadioGroupItem value={option.value} id={`brand-${option.value}`} />
+                                <Label htmlFor={`brand-${option.value}`} className="cursor-pointer w-full">
+                                  {option.label}
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </motion.div>
+
+                        <motion.div variants={fadeInUp} className="space-y-2">
+                          <Label htmlFor="brandDoc">Upload comprovante INPI/licenciamento (PDF) *</Label>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#FFC800] transition-colors cursor-pointer"
+                               onClick={() => document.getElementById('brandDoc')?.click()}>
+                            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                            {formData.brandDoc ? (
+                              <p className="text-sm text-green-600 font-medium">✓ {formData.brandDoc.name}</p>
+                            ) : (
+                              <p className="text-sm text-gray-600">Clique para fazer upload ou arraste o arquivo aqui</p>
+                            )}
+                            <Input
+                              id="brandDoc"
+                              type="file"
+                              accept=".pdf"
+                              className="hidden"
+                              onChange={(e) => updateFormData("brandDoc", e.target.files?.[0] || null)}
+                            />
+                          </div>
+                        </motion.div>
+                      </div>
+
+                      {/* Seção: Documentos dos Produtos */}
+                      {formData.products.length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-black border-b pb-2">📦 Documentos dos Produtos</h3>
+                          <p className="text-sm text-gray-600">
+                            Upload de fotos e fichas técnicas para cada produto cadastrado
+                          </p>
+                          
+                          {formData.products.map((product, index) => (
+                            <motion.div
+                              key={product.id}
+                              variants={fadeInUp}
+                              className="border border-gray-300 rounded-lg p-4 space-y-4 bg-gray-50"
+                            >
+                              <h4 className="font-medium text-black">
+                                {product.name || `Produto ${index + 1}`}
+                              </h4>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Fotos do Produto */}
+                                <div className="space-y-2">
+                                  <Label htmlFor={`photos-${product.id}`}>Fotos do produto</Label>
+                                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#FFC800] transition-colors cursor-pointer"
+                                       onClick={() => document.getElementById(`photos-${product.id}`)?.click()}>
+                                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-1" />
+                                    {formData.productPhotos[product.id]?.length > 0 ? (
+                                      <p className="text-xs text-green-600 font-medium">
+                                        ✓ {formData.productPhotos[product.id].length} foto(s) selecionada(s)
+                                      </p>
+                                    ) : (
+                                      <p className="text-xs text-gray-600">Adicionar fotos</p>
+                                    )}
+                                    <Input
+                                      id={`photos-${product.id}`}
+                                      type="file"
+                                      accept="image/*"
+                                      multiple
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const files = Array.from(e.target.files || []);
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          productPhotos: {
+                                            ...prev.productPhotos,
+                                            [product.id]: files
+                                          }
+                                        }));
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Ficha Técnica */}
+                                <div className="space-y-2">
+                                  <Label htmlFor={`tech-${product.id}`}>Ficha técnica (PDF)</Label>
+                                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#FFC800] transition-colors cursor-pointer"
+                                       onClick={() => document.getElementById(`tech-${product.id}`)?.click()}>
+                                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-1" />
+                                    {formData.productTechnicalSheets[product.id] ? (
+                                      <p className="text-xs text-green-600 font-medium">
+                                        ✓ {formData.productTechnicalSheets[product.id]?.name}
+                                      </p>
+                                    ) : (
+                                      <p className="text-xs text-gray-600">Adicionar ficha técnica</p>
+                                    )}
+                                    <Input
+                                      id={`tech-${product.id}`}
+                                      type="file"
+                                      accept=".pdf"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          productTechnicalSheets: {
+                                            ...prev.productTechnicalSheets,
+                                            [product.id]: e.target.files?.[0] || null
+                                          }
+                                        }));
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
                           ))}
-                        </RadioGroup>
-                      </motion.div>
-
-                      <motion.div variants={fadeInUp} className="space-y-2">
-                        <Label htmlFor="regulatoryDoc">Upload comprovante de regularidade (PDF) *</Label>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#FFC800] transition-colors cursor-pointer">
-                          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-600">Clique para fazer upload ou arraste o arquivo aqui</p>
-                          <Input
-                            id="regulatoryDoc"
-                            type="file"
-                            accept=".pdf"
-                            className="hidden"
-                            onChange={(e) => updateFormData("regulatoryDoc", e.target.files?.[0] || null)}
-                          />
                         </div>
-                      </motion.div>
+                      )}
 
-                      <motion.div variants={fadeInUp} className="space-y-2">
-                        <Label>Marca registrada no INPI ou licença válida? *</Label>
-                        <RadioGroup
-                          value={formData.brandStatus}
-                          onValueChange={(value) => updateFormData("brandStatus", value)}
-                          className="space-y-2"
-                        >
-                          {[
-                            { value: "definitivo", label: "Registro definitivo" },
-                            { value: "protocolo", label: "Protocolo em andamento" },
-                            { value: "licenciamento", label: "Licenciamento válido" }
-                          ].map((option) => (
-                            <div key={option.value} className="flex items-center space-x-2 rounded-md border border-gray-300 p-3 cursor-pointer hover:bg-[#FFC800]/10 hover:border-[#FFC800] transition-all duration-300">
-                              <RadioGroupItem value={option.value} id={`brand-${option.value}`} />
-                              <Label htmlFor={`brand-${option.value}`} className="cursor-pointer w-full">
-                                {option.label}
-                              </Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </motion.div>
-
-                      <motion.div variants={fadeInUp} className="space-y-2">
-                        <Label htmlFor="brandDoc">Upload comprovante INPI/licenciamento (PDF) *</Label>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#FFC800] transition-colors cursor-pointer">
-                          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-600">Clique para fazer upload ou arraste o arquivo aqui</p>
-                          <Input
-                            id="brandDoc"
-                            type="file"
-                            accept=".pdf"
-                            className="hidden"
-                            onChange={(e) => updateFormData("brandDoc", e.target.files?.[0] || null)}
-                          />
-                        </div>
+                      <motion.div variants={fadeInUp} className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                        <p className="text-sm text-blue-900">
+                          💡 <strong>Dica:</strong> Certifique-se de que todos os documentos estejam legíveis e atualizados. 
+                          Documentos incompletos podem atrasar a análise da sua inscrição.
+                        </p>
                       </motion.div>
                     </CardContent>
                   </>
@@ -1184,51 +1406,83 @@ const OnboardingForm = () => {
               </motion.div>
             </AnimatePresence>
 
-            <CardFooter className="flex justify-between pt-6 pb-4 border-t">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 0}
-                  className="flex items-center gap-1 transition-all duration-300 rounded-2xl"
+            <CardFooter className="flex flex-col gap-4 pt-6 pb-4 border-t">
+              <div className="flex justify-between items-center w-full">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <ChevronLeft className="h-4 w-4" /> Voltar
-                </Button>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  type="button"
-                  onClick={
-                    currentStep === steps.length - 1 ? handleSubmit : nextStep
-                  }
-                  disabled={!isStepValid() || isSubmitting}
-                  className={cn(
-                    "flex items-center gap-1 transition-all duration-300 rounded-2xl bg-[#FFC800] hover:bg-[#FFD700] text-black font-semibold",
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-1 transition-all duration-300"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Voltar ao Dashboard
+                  </Button>
+                </motion.div>
+
+                <div className="flex gap-3">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleSaveAndReturn}
+                      disabled={!isStepValid() || isSubmitting}
+                      className="flex items-center gap-2 transition-all duration-300 rounded-2xl border-2"
+                    >
+                      <Check className="h-4 w-4" /> Salvar
+                    </Button>
+                  </motion.div>
+
+                  {currentStep < steps.length - 1 && (
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        type="button"
+                        onClick={handleSaveAndNext}
+                        disabled={!isStepValid() || isSubmitting}
+                        className={cn(
+                          "flex items-center gap-2 transition-all duration-300 rounded-2xl bg-[#FFC800] hover:bg-[#FFD700] text-black font-semibold",
+                        )}
+                      >
+                        Salvar e Continuar <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
                   )}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Enviando...
-                    </>
-                  ) : (
-                    <>
-                      {currentStep === steps.length - 1 ? "Enviar Inscrição" : "Próximo"}
-                      {currentStep === steps.length - 1 ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </>
+
+                  {currentStep === steps.length - 1 && (
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={!isStepValid() || isSubmitting}
+                        className={cn(
+                          "flex items-center gap-2 transition-all duration-300 rounded-2xl bg-[#FFC800] hover:bg-[#FFD700] text-black font-semibold",
+                        )}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" /> Enviando...
+                          </>
+                        ) : (
+                          <>
+                            Enviar Inscrição <Check className="h-4 w-4" />
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
                   )}
-                </Button>
-              </motion.div>
+                </div>
+              </div>
             </CardFooter>
           </div>
         </Card>
@@ -1236,12 +1490,12 @@ const OnboardingForm = () => {
 
       {/* Step indicator */}
       <motion.div
-        className="mt-6 text-center text-sm text-gray-600"
+        className="mt-6 text-center text-sm text-gray-700"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        Etapa {currentStep + 1} de {steps.length}: {steps[currentStep].title}
+        <span className="font-semibold text-[#333333]">{steps[currentStep].title}</span>
       </motion.div>
     </div>
   );

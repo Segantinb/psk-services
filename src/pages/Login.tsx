@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, signup } = useAuth();
+  const { signup } = useAuth();
   const { toast } = useToast();
 
   // Login state
@@ -26,60 +26,37 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const success = await login(loginEmail, loginPassword);
+    // Validação temporariamente desabilitada - auto login
+    await signup(loginEmail || 'Usuário', loginEmail || 'user@email.com', 'temp123');
     
-    if (success) {
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo de volta.",
-      });
-      navigate('/dashboard');
-    } else {
-      toast({
-        title: "Erro no login",
-        description: "Email ou senha incorretos.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Login realizado com sucesso!",
+      description: "Bem-vindo de volta.",
+    });
+    navigate('/dashboard');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (signupPassword !== signupConfirmPassword) {
-      toast({
-        title: "Erro no cadastro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const success = await signup(signupName, signupEmail, signupPassword);
-
-    if (success) {
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Você já está logado.",
-      });
-      navigate('/dashboard');
-    } else {
-      toast({
-        title: "Erro no cadastro",
-        description: "Este email já está em uso.",
-        variant: "destructive",
-      });
-    }
+    // Validação temporariamente desabilitada - auto signup
+    await signup(signupName || 'Usuário', signupEmail || 'user@email.com', 'temp123');
+    
+    toast({
+      title: "Conta criada com sucesso!",
+      description: "Você já está logado.",
+    });
+    navigate('/dashboard');
   };
 
   return (
     <div className="min-h-screen bg-yellow-400 flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-gelada text-black uppercase mb-2" style={{ fontWeight: 900 }}>
+          <h1 className="text-4xl md:text-5xl font-gelada text-[#333333] uppercase mb-2" style={{ fontWeight: 900 }}>
             Zé Delivery
           </h1>
-          <p className="text-black text-lg">Programa de Inovação</p>
+          <p className="text-[#333333] text-lg">Programa de Inovação</p>
         </div>
 
         <Tabs defaultValue="login" className="w-full">
@@ -106,11 +83,10 @@ const Login = () => {
                     <Label htmlFor="login-email">Email</Label>
                     <Input
                       id="login-email"
-                      type="email"
+                      type="text"
                       placeholder="seu@email.com"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      required
                       className="bg-white/80"
                     />
                   </div>
@@ -122,7 +98,6 @@ const Login = () => {
                       placeholder="••••••••"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      required
                       className="bg-white/80"
                     />
                   </div>
@@ -152,7 +127,6 @@ const Login = () => {
                       placeholder="Seu nome"
                       value={signupName}
                       onChange={(e) => setSignupName(e.target.value)}
-                      required
                       className="bg-white/80"
                     />
                   </div>
@@ -160,11 +134,10 @@ const Login = () => {
                     <Label htmlFor="signup-email">Email</Label>
                     <Input
                       id="signup-email"
-                      type="email"
+                      type="text"
                       placeholder="seu@email.com"
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
-                      required
                       className="bg-white/80"
                     />
                   </div>
@@ -176,7 +149,6 @@ const Login = () => {
                       placeholder="••••••••"
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
-                      required
                       className="bg-white/80"
                     />
                   </div>
@@ -188,7 +160,6 @@ const Login = () => {
                       placeholder="••••••••"
                       value={signupConfirmPassword}
                       onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                      required
                       className="bg-white/80"
                     />
                   </div>
@@ -205,7 +176,7 @@ const Login = () => {
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
-            className="text-black hover:bg-white/20"
+            className="text-[#333333] hover:bg-white/20"
           >
             ← Voltar para o site
           </Button>
@@ -216,4 +187,5 @@ const Login = () => {
 };
 
 export default Login;
+
 
